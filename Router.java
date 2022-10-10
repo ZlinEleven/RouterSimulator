@@ -1,20 +1,27 @@
+import java.nio.BufferOverflowException;
 import java.util.EmptyStackException;
 
 public class Router {
-    private final int CAPACITY = 10;
+    private static int routerCount = -1;
 
     private Packet[] router;
+
+    private int id;
     private int rear;
     private int front;
+    private int capacity;
 
-    public Router(){
-        router = new Packet[CAPACITY];
+    public Router(int capacity){
+        routerCount += 1;
+        id = routerCount;
+        router = new Packet[capacity];
+        this.capacity = capacity;
         rear = -1;
         front = -1;
     }
 
     public void enqueue(Packet p){
-        if((rear + 1) % CAPACITY == front){
+        if((rear + 1) % capacity == front){
             throw new IllegalStateException("Full queue.");
         }
 
@@ -24,7 +31,7 @@ public class Router {
         }
 
         else{
-            rear = (rear + 1)%CAPACITY;
+            rear = (rear + 1)%capacity;
         }
 
         router[rear] = p;
@@ -40,21 +47,26 @@ public class Router {
             front = -1;
             rear = -1;
         }
-
-        front = (front + 1)%CAPACITY;
+        else{
+            front = (front + 1)%capacity;
+        }
+        // System.out.println("Front: " + front + " | Rear: " + rear);
         return temp;
     }
 
     public Packet peek(){
-        return router[rear];
+        return router[front];
     }
 
     public int size(){
-        if(front <= rear){
-            return (rear + 1) - front;
+        if(front == -1){
+            return 0;
+        }
+        else if(rear >= front){
+            return rear + 1 - front;
         }
         else{
-            return (rear + CAPACITY  + 1) - front;
+            return rear + capacity - front;
         }
     }
 
@@ -63,15 +75,33 @@ public class Router {
     }
 
     public String toString(){
-        String ans = "R";
-        return ans;
+        String ans = "R" + id + ": {";
+        if(!isEmpty()){
+            ans += router[front];
+        }
+        for(int i = 1; i < size(); i++){
+            ans += ", " + router[(front + 1)%capacity];
+        }
+        return ans + "}";
     }
 
-    // public static int sendPacketTo(Collection routers){
-    //     int mostFree = 0;
+    public static int sendPacketTo(Router[] routers)throws Exception{
+        int mostFree = -1;
+        int leastBuffer = routers[0].capacity;
 
-    //     for (int i = 0; i < routers.size(); i++){
-            
-    //     }
-    // }
+        for (int i = 0; i < routers.length; i++){
+            // System.out.println("Router " + (i + 1) + " size: " + routers[i].size());
+            if(routers[i].size() < leastBuffer && (mostFree == -1 || routers[i].size() < routers[mostFree].size())){
+                mostFree = i;
+                // System.out.println("Most free: " + mostFree);
+                leastBuffer = routers[i].size();
+            }
+        }
+
+        if(mostFree == -1){
+            throw new BufferOverflowException();
+        }
+
+        return mostFree;
+    }
 }

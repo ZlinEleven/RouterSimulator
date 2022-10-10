@@ -6,12 +6,12 @@ public class Packet{
     private int timeArrive;
     private int timeToDest;
 
-    public Packet(int arrival, int timeToDest){
+    public Packet(int packetSize, int timeArrive){
         packetCount += 1;
         id = packetCount;
-        packetSize = (int) Math.random();
-        timeArrive = arrival;
-        this.timeToDest = timeToDest;
+        this.packetSize = packetSize;
+        this.timeArrive = timeArrive;
+        timeToDest = packetSize/100;
     }
 
     public int getId(){
