@@ -1,3 +1,4 @@
+import java.nio.BufferOverflowException;
 import java.util.EmptyStackException;
 import java.util.Scanner;
 
@@ -55,25 +56,35 @@ public class Simulator {
         }
     }
 
-    public double simulate(int currentTime) throws Exception{
-        System.out.println("Time: " + currentTime);
-        
-        int dispatcherStart = dispatcher.size();
+    public double simulate() throws Exception{
+        for(int currentTime = 1; currentTime <= duration; currentTime++){
+            decrementPackets();
+            System.out.println("Time: " + currentTime);
+            
+            int dispatcherStart = dispatcher.size();
 
-        generatePackets(currentTime);
-        
-        if(dispatcher.size() == dispatcherStart){
-            System.out.println("No packets arrived.");
+            generatePackets(currentTime);
+            
+            if(dispatcher.size() == dispatcherStart){
+                System.out.println("No packets arrived.");
+            }
+
+            dispatcherToIntermediate();
+
+            sentToDestination(currentTime);
+
+            for(int i = 0; i < routers.length; i++){
+                System.out.println(routers[i]);
+            }
+
+            System.out.println();
         }
 
-        dispatcherToIntermediate();
-
-        decrementPackets(currentTime);
-
-        for(int i = 0; i < routers.length; i++){
-            System.out.println(routers[i]);
-        }
-
+        System.out.println("Simulation ending...");
+        System.out.println("Total service time: " + totalServiceTime);
+        System.out.println("Total packets served: " + totalPacketsArrived);
+        System.out.println("Average service time per packet: " + ((double) totalServiceTime)/totalPacketsArrived);
+        System.out.println("Total packets dropped: " + packetsDropped);
         System.out.println();
 
         return 0;
@@ -91,23 +102,41 @@ public class Simulator {
     }
     public void dispatcherToIntermediate() throws Exception{
         while(!dispatcher.isEmpty()){
-            int targetRouter = Router.sendPacketTo(routers);
+            int targetRouter = 0;
             Packet targetPacket = dispatcher.dequeue();
-            routers[targetRouter].enqueue(targetPacket);
-            System.out.println("Packet " + targetPacket.getId() + " sent to Router " + (targetRouter + 1) + ".");
+
+            try{
+                targetRouter = Router.sendPacketTo(routers);
+                routers[targetRouter].enqueue(targetPacket);
+                System.out.println("Packet " + targetPacket.getId() + " sent to Router " + (targetRouter + 1) + ".");
+            }
+            catch(Exception e){
+                System.out.println("Network is congested. Packet " + targetPacket.getId() + " is dropped.");
+                packetsDropped += 1;
+            }
         }
     }
 
-    public void decrementPackets(int currentTime) throws Exception{
-        int destinationCount = 0;
+    public void decrementPackets(){
         for(int i = 0; i < routers.length; i++){
             if(!routers[i].isEmpty()){
                 Packet target = routers[i].peek();
                 target.setTimeToDest(target.getTimeToDest() - 1);
-                if(target.getTimeToDest() == 0 && destinationCount < bandWidth){
+            }
+        }
+    }
+
+    public void sentToDestination(int currentTime) throws Exception{
+        int destinationCount = 0;
+        for(int i = 0; i < routers.length; i++){
+            if(!routers[i].isEmpty()){
+                Packet target = routers[i].peek();
+                if(target.getTimeToDest() <= 0 && destinationCount < bandWidth){
                     try{
                         Packet temp = routers[i].dequeue();
                         System.out.println("Packet " + temp.getId() + " has successfully reached its destination: +" + (currentTime - temp.getTimeArrive()));
+                        totalServiceTime += currentTime - temp.getTimeArrive();
+                        totalPacketsArrived += 1;
                         destinationCount += 1;
                     }
                     catch(EmptyStackException e){
@@ -131,14 +160,13 @@ public class Simulator {
 
         String selection = "y";
 
-        while(selection != "n"){
+        while(!selection.equals("n")){
             
 
             Simulator simulator = new Simulator();
 
-            for(int i = 1; i <= duration; i++){
-                simulator.simulate(i);
-            }
+            simulator.simulate();
+
 
             System.out.print("Do you want to try another simulation? (y/n): ");
             selection = scan.nextLine();

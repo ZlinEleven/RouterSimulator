@@ -22,7 +22,7 @@ public class Router {
 
     public void enqueue(Packet p){
         if((rear + 1) % capacity == front){
-            throw new IllegalStateException("Full queue.");
+            throw new IllegalStateException();
         }
 
         if(front == -1){
@@ -66,7 +66,7 @@ public class Router {
             return rear + 1 - front;
         }
         else{
-            return rear + capacity - front;
+            return rear + capacity  + 1- front;
         }
     }
 
@@ -80,7 +80,7 @@ public class Router {
             ans += router[front];
         }
         for(int i = 1; i < size(); i++){
-            ans += ", " + router[(front + 1)%capacity];
+            ans += ", " + router[(front + i)%capacity];
         }
         return ans + "}";
     }
