@@ -1,3 +1,5 @@
+/*Zhenbin Lin, 114866923, Recitation section 04*/
+
 import java.nio.BufferOverflowException;
 import java.util.EmptyStackException;
 import java.util.Scanner;
@@ -38,6 +40,10 @@ public class Simulator {
 
         System.out.print("\nEnter the maximum size of a packet: ");
         maxPacketSize = Integer.parseInt(scan.nextLine());
+
+        if(maxPacketSize < minPacketSize){
+            throw new IllegalArgumentException("\nMaximum size cannot be less than minimum size. Please try again.\n");
+        }
 
         System.out.print("\nEnter the bandwidth size: ");
         bandWidth = Integer.parseInt(scan.nextLine());
@@ -80,14 +86,7 @@ public class Simulator {
             System.out.println();
         }
 
-        System.out.println("Simulation ending...");
-        System.out.println("Total service time: " + totalServiceTime);
-        System.out.println("Total packets served: " + totalPacketsArrived);
-        System.out.println("Average service time per packet: " + ((double) totalServiceTime)/totalPacketsArrived);
-        System.out.println("Total packets dropped: " + packetsDropped);
-        System.out.println();
-
-        return 0;
+        return ((double) totalServiceTime)/totalPacketsArrived;
     }
 
     public void generatePackets(int currentTime){
@@ -110,7 +109,11 @@ public class Simulator {
                 routers[targetRouter].enqueue(targetPacket);
                 System.out.println("Packet " + targetPacket.getId() + " sent to Router " + (targetRouter + 1) + ".");
             }
-            catch(Exception e){
+            catch(IllegalStateException e){
+                System.out.println("Network is congested. Packet " + targetPacket.getId() + " is dropped.");
+                packetsDropped += 1;
+            }
+            catch(BufferOverflowException e){
                 System.out.println("Network is congested. Packet " + targetPacket.getId() + " is dropped.");
                 packetsDropped += 1;
             }
@@ -155,17 +158,31 @@ public class Simulator {
         return (int) (Math.random() * (maxVal - minVal + 1)) + minVal;
     }
 
+    private void printEnd(double averageServeTime){
+        System.out.println("Simulation ending...");
+        System.out.println("Total service time: " + totalServiceTime);
+        System.out.println("Total packets served: " + totalPacketsArrived);
+        System.out.println("Average service time per packet: " + String.format("%.2f", averageServeTime));
+        System.out.println("Total packets dropped: " + packetsDropped);
+        System.out.println();
+    }
+
     public static void main(String[] args) throws Exception{
         Scanner scan = new Scanner(System.in);
 
         String selection = "y";
 
         while(!selection.equals("n")){
-            
 
-            Simulator simulator = new Simulator();
+            try{
+                Simulator simulator = new Simulator();
+                double averageServeTime = simulator.simulate();
 
-            simulator.simulate();
+                simulator.printEnd(averageServeTime);
+            }
+            catch(IllegalArgumentException e){
+                System.out.println(e.getMessage());
+            }
 
 
             System.out.print("Do you want to try another simulation? (y/n): ");
@@ -173,5 +190,7 @@ public class Simulator {
             System.out.println();
         
         }
+
+        scan.close();
     }
 }

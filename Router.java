@@ -1,6 +1,12 @@
+/*Zhenbin Lin, 114866923, Recitation section 04*/
+
 import java.nio.BufferOverflowException;
 import java.util.EmptyStackException;
 
+/**
+ * This class represents a router object. The router is a circular queue that takes in packets and processes them
+ * @author zhenb
+ */
 public class Router {
     private static int routerCount = -1;
 
@@ -11,6 +17,10 @@ public class Router {
     private int front;
     private int capacity;
 
+    /**
+     * Constructor for the router object. Initializes an array with capacity: capacity.
+     * @param capacity The length to initialize the array to
+     */
     public Router(int capacity){
         routerCount += 1;
         id = routerCount;
@@ -20,6 +30,10 @@ public class Router {
         front = -1;
     }
 
+    /**
+     * Adds a 
+     * @param p
+     */
     public void enqueue(Packet p){
         if((rear + 1) % capacity == front){
             throw new IllegalStateException();
