@@ -1,6 +1,3 @@
-/*Zhenbin Lin, 114866923, Recitation section 04*/
-
-
 /**
  * This class represents a packet object which is sent through the three levels of routers
  * @author zhenb 

@@ -1,5 +1,3 @@
-/*Zhenbin Lin, 114866923, Recitation section 04*/
-
 import java.nio.BufferOverflowException;
 import java.util.EmptyStackException;
 
