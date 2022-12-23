@@ -31,10 +31,11 @@ public class Router {
     }
 
     /**
-     * Adds a 
-     * @param p
+     * Adds a packet object at the rear of the array. 
+     * @throws Exception If the router is full, an IllegalStateException will be thrown.
+     * @param p The packet object to be added
      */
-    public void enqueue(Packet p){
+    public void enqueue(Packet p) throws Exception{
         if((rear + 1) % capacity == front){
             throw new IllegalStateException();
         }
@@ -51,6 +52,11 @@ public class Router {
         router[rear] = p;
     }
 
+    /**
+     * Moves the front pointer of the array forward, the previous packet pointed by the object will be ignored
+     * @return The packet object the front pointer was previouslt pointing to
+     * @throws Exception If router is empty, an EmptyStackException will be thrown
+     */
     public Packet dequeue() throws Exception{
         if(isEmpty()){
             throw new EmptyStackException();
@@ -64,14 +70,21 @@ public class Router {
         else{
             front = (front + 1)%capacity;
         }
-        // System.out.println("Front: " + front + " | Rear: " + rear);
         return temp;
     }
 
+    /**
+     * Gives the packet object referenced by the front pointer
+     * @return The packet object referenced by the front pointer
+     */
     public Packet peek(){
         return router[front];
     }
 
+    /**
+     * The amount of packets recognized within the router
+     * @return The amount of packets recognized
+     */
     public int size(){
         if(front == -1){
             return 0;
@@ -84,10 +97,17 @@ public class Router {
         }
     }
 
+    /**
+     * Shows whether the router contains a packet or not
+     * @return A true if the router contains at least one packet, false otherwise
+     */
     public boolean isEmpty(){
         return front == -1;
     }
 
+    /**
+     * A string representation of the router as well as all the packets within it
+     */
     public String toString(){
         String ans = "R" + id + ": {";
         if(!isEmpty()){
@@ -99,6 +119,12 @@ public class Router {
         return ans + "}";
     }
 
+    /**
+     * A static method used to send packets from the dispatcher to an intermediate router with the least buffer
+     * @param routers An array of all the intermediate routers
+     * @return The index of the intermediate router with the least buffer
+     * @throws Exception If none of the intermediate routers have any buffer left, a BufferOverflowException will be thrown
+     */
     public static int sendPacketTo(Router[] routers)throws Exception{
         int mostFree = -1;
         int leastBuffer = routers[0].capacity;

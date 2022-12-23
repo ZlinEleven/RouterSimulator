@@ -4,6 +4,12 @@ import java.nio.BufferOverflowException;
 import java.util.EmptyStackException;
 import java.util.Scanner;
 
+/**
+ * This class contains the main method which is a menu driven application.
+ * The program prompts the user for simulation parameters to run the router
+ * simulation on. The user can also input "n" to terminate the program
+ * @author zhenb
+ */
 public class Simulator {
     final static int MAX_PACKETS =  3;
 
@@ -20,7 +26,9 @@ public class Simulator {
     private int bandWidth;
     private static int duration;    
 
-
+    /**
+     * The constructor for the Simulator class. The constructor prompts the user for inputs and initializes the dispatcher and intermediate routers accordingly
+     */
     public Simulator(){
         Scanner scan = new Scanner(System.in);
 
@@ -62,6 +70,11 @@ public class Simulator {
         }
     }
 
+    /**
+     * This method simulates the router simulation for a set amount of simulation time units
+     * @return The average time packets sent to the destination spent in the router network
+     * @throws Exception Methods used within this method contains exceptions
+     */
     public double simulate() throws Exception{
         for(int currentTime = 1; currentTime <= duration; currentTime++){
             decrementPackets();
@@ -89,7 +102,12 @@ public class Simulator {
         return ((double) totalServiceTime)/totalPacketsArrived;
     }
 
-    public void generatePackets(int currentTime){
+    /**
+     * Generates the packet and sends them to the dispatcher router. Each time unit can only generate up ot three packets
+     * @param currentTime The time unit in the simulation. This parameter is used to get the generated packet's arrival time
+     * @throws Exception If the dispatcher is full, the generated packet will be dropped and an IllegalStateException will be thrown
+     */
+    public void generatePackets(int currentTime) throws Exception{
         for(int i = 0; i < MAX_PACKETS; i++){
             if(generateArrival(arrivalProb)){
                 int packetSize = randInt(minPacketSize, maxPacketSize);
@@ -99,6 +117,10 @@ public class Simulator {
             }
         }
     }
+
+    /**
+     * Sends the all the packets within the dispatcher to the intermediate router with the least buffer
+     */
     public void dispatcherToIntermediate() throws Exception{
         while(!dispatcher.isEmpty()){
             int targetRouter = 0;
@@ -120,6 +142,9 @@ public class Simulator {
         }
     }
 
+    /**
+     * Goes through the first packets in all the intermediate routers and decrements the processing time by 1
+     */
     public void decrementPackets(){
         for(int i = 0; i < routers.length; i++){
             if(!routers[i].isEmpty()){
@@ -129,6 +154,11 @@ public class Simulator {
         }
     }
 
+    /**
+     * Checks if any packets in the intermediate routers are ready to be sent to the destination router. Only a max of "bandWidth" can be sent
+     * during each time unit
+     * @param currentTime The current time unit in the simulation
+     */
     public void sentToDestination(int currentTime) throws Exception{
         int destinationCount = 0;
         for(int i = 0; i < routers.length; i++){
@@ -150,14 +180,29 @@ public class Simulator {
         }
     }
 
+    /**
+     * Determines whether a packet should be generated or not. True means a packet will be generated, and false means a packet won't be generated
+     * @param arrivalProb The probability to compare Math.random() to
+     * @return True of Math.random() is less than arrivalProb, false otherwise
+     */
     public boolean generateArrival(double arrivalProb){
         return Math.random() < arrivalProb;
     }
 
+    /**
+     * Generates a random integer within minVal and maxVal
+     * @param minVal The lower bound of the number generation
+     * @param maxVal The upper bound of the number generation
+     * @return A random integer within minval and maxVal
+     */
     private int randInt(int minVal, int maxVal){
         return (int) (Math.random() * (maxVal - minVal + 1)) + minVal;
     }
 
+    /**
+     * Prints out the summary statement of the simulation
+     * @param averageServeTime The average time packets that were successfully processed spent in the router network
+     */
     private void printEnd(double averageServeTime){
         System.out.println("Simulation ending...");
         System.out.println("Total service time: " + totalServiceTime);
